@@ -124,4 +124,8 @@ test-suite p0-test
     -- Test dependencies.
     build-depends:
         base ^>=4.16.4.0,
-        p0
+        p0,
+        tasty >=1.5,
+        tasty-hunit >=0.10,
+        tasty-hedgehog >=1.4,
+        hedgehog >=1.4
