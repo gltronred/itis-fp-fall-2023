@@ -22,3 +22,19 @@ rev (x:xs) = xs -- [x]
 -- []
 zipLong :: [a] -> [b] -> [(a,b)]
 zipLong as bs = error "Implement me!"
+
+
+data Tree a
+  = Empty
+  | Node
+    { left :: Maybe (Tree a)
+    , value :: a
+    , right :: Maybe (Tree a)
+    }
+  deriving (Eq,Show,Read)
+
+empty :: Tree a
+empty = Empty
+
+traversal :: Tree a -> [a]
+traversal _ = []

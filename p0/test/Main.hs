@@ -41,4 +41,15 @@ tests = testGroup "All Tests"
   , testProperty "strange opaque value" prop_opaque
   , testProperty "all numbers do not divide 10000" $
     prop_div10000
+  , treeTests
   ]
+
+treeTests :: TestTree
+treeTests = testGroup "Tree Tests"
+  [ testCase "empty" $ traversal empty @?= ([] :: [Int])
+  , testCase "single elt" $ traversal (Node Nothing 1 Nothing) @?= [1]
+  , testCase "three elts" $
+    traversal (Node (Just $ leaf 1) 2 (Just $ leaf 3)) @?= [1,2,3]
+  ]
+  where leaf :: a -> Tree a
+        leaf a = Node Nothing a Nothing
