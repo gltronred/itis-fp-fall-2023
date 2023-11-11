@@ -41,6 +41,9 @@ data Tree a
 empty :: Tree a
 empty = Empty
 
+leaf :: a -> Tree a
+leaf a = Node Nothing a Nothing
+
 traversal :: Tree a -> [a]
 traversal Empty = []
 traversal (Node ml v mr)

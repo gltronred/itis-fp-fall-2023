@@ -1,7 +1,7 @@
 module Main (main) where
 
 import Test.Tasty
-import Test.Tasty.HUnit
+import Test.Tasty.HUnit hiding (assert)
 import Test.Tasty.Hedgehog
 import Hedgehog
 import qualified Hedgehog.Gen as Gen
@@ -57,9 +57,40 @@ traversalTests = testGroup "traversal"
   , testCase "three elts" $
     traversal (Node (Just $ leaf 1) 2 (Just $ leaf 3)) @?= [1,2,3]
   ]
-  where leaf :: a -> Tree a
-        leaf a = Node Nothing a Nothing
+
+isCorrect :: Ord a => Tree a -> Bool
+isCorrect Empty = True
+isCorrect (Node ml v mr) = maybe True isCorrect ml &&
+  maybe True isCorrect mr &&
+  all (<v) (maybe [] traversal ml) &&
+  all (>=v) (maybe [] traversal mr)
+
+arbitraryTree :: Size -> Gen (Tree Int)
+arbitraryTree 0 = pure empty
+arbitraryTree size = do
+  leftSize <- Size <$> Gen.int (Range.linear 0 $ unSize size - 1)
+  let rightSize = size - leftSize - 1
+  l <- if leftSize == 0
+       then pure Nothing
+       else Just <$> arbitraryTree leftSize
+  v <- Gen.int $ Range.linear 0 10000
+  r <- if rightSize == 0
+       then pure Nothing
+       else Just <$> arbitraryTree rightSize
+  pure $ Node l v r
+
+treeGen :: Gen (Tree Int)
+treeGen = Gen.sized arbitraryTree
+
+prop_bst :: Property
+prop_bst = property $ do
+  t <- forAll treeGen
+  assert $ isCorrect t
 
 insertTests :: TestTree
 insertTests = testGroup "insert"
-  []
+  [ testProperty "BST is correct" prop_bst
+  , testCase "1" $ isCorrect (leaf 1) @? "leaf 1"
+  , testCase "3" $
+    isCorrect (Node (Just $ leaf 1) 2 (Just $ leaf 2)) @? "tree 3"
+  ]
