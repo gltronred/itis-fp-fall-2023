@@ -66,6 +66,10 @@ isCorrect (Node ml v mr) = maybe True isCorrect ml &&
   all (<v) (maybe [] traversal ml) &&
   all (>=v) (maybe [] traversal mr)
 
+-- Поменять генератор двоичных деревьев поиска так,
+-- чтобы задавался диапазон элементов дерева и
+-- в левом и в правом поддереве генерировались только
+-- нужные элементы (чтобы BST было корректным)
 arbitraryTree :: Size -> Gen (Tree Int)
 arbitraryTree 0 = pure empty
 arbitraryTree size = do

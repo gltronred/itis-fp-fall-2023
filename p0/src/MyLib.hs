@@ -54,3 +54,12 @@ insert v Empty = leaf v
 insert v t@(Node ml root mr)
   | v < root  = t{ left = Just $ maybe (leaf v) (insert v) ml }
   | otherwise = t{ right= Just $ maybe (leaf v) (insert v) mr }
+
+-- Напишите тесты-свойства к функциям и сами функции
+-- левого и правого поворота деревьев
+-- (см. https://en.wikipedia.org/wiki/Red%E2%80%93black_tree)
+rotateLeft :: Tree a -> Tree a
+rotateLeft t = t
+
+rotateRight :: Tree a -> Tree a
+rotateRight t = t
