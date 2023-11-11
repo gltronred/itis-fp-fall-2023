@@ -37,4 +37,8 @@ empty :: Tree a
 empty = Empty
 
 traversal :: Tree a -> [a]
-traversal _ = []
+traversal Empty = []
+traversal (Node Nothing v Nothing) = [v]
+traversal (Node (Just l) v Nothing) = traversal l ++ [v]
+traversal (Node Nothing v (Just r)) = [v] ++ traversal r
+traversal (Node (Just l) v (Just r)) = traversal l ++ [v] ++ traversal r
