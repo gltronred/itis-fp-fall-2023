@@ -6,6 +6,7 @@ import Test.Tasty.Hedgehog
 import Hedgehog
 import qualified Hedgehog.Gen as Gen
 import qualified Hedgehog.Range as Range
+import Data.List (foldl', sort)
 
 import MyLib
 
@@ -84,12 +85,20 @@ treeGen = Gen.sized arbitraryTree
 
 prop_bst :: Property
 prop_bst = property $ do
-  t <- forAll treeGen
+  xs <- forAll $ Gen.list (Range.linear 0 30) $ Gen.int (Range.linear 0 1000)
+  let t = foldl' (\tree elt -> insert elt tree) empty xs
   assert $ isCorrect t
+
+prop_inserts :: Property
+prop_inserts = property $ do
+  xs <- forAll $ Gen.list (Range.linear 0 30) $ Gen.int (Range.linear 0 1000)
+  let t = foldl' (\tree elt -> insert elt tree) empty xs
+  sort xs === traversal t
 
 insertTests :: TestTree
 insertTests = testGroup "insert"
   [ testProperty "BST is correct" prop_bst
+  , testProperty "Insert really inserts" prop_inserts
   , testCase "1" $ isCorrect (leaf 1) @? "leaf 1"
   , testCase "3" $
     isCorrect (Node (Just $ leaf 1) 2 (Just $ leaf 2)) @? "tree 3"
