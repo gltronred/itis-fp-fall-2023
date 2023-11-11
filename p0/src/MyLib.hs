@@ -50,4 +50,7 @@ traversal (Node ml v mr)
   = maybe [] traversal ml ++ [v] ++ maybe [] traversal mr
 
 insert :: Ord a => a -> Tree a -> Tree a
-insert v t = t
+insert v Empty = leaf v
+insert v t@(Node ml root mr)
+  | v < root  = t{ left = Just $ maybe (leaf v) (insert v) ml }
+  | otherwise = t{ right= Just $ maybe (leaf v) (insert v) mr }
