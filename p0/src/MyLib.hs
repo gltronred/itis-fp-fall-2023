@@ -26,6 +26,9 @@ zipLong :: [a] -> [b] -> [(a,b)]
 zipLong as bs = error "Implement me!"
 
 
+-- Binary Search Tree
+--
+-- left < root <= right
 data Tree a
   = Empty
   | Node
@@ -42,3 +45,6 @@ traversal :: Tree a -> [a]
 traversal Empty = []
 traversal (Node ml v mr)
   = maybe [] traversal ml ++ [v] ++ maybe [] traversal mr
+
+insert :: Ord a => a -> Tree a -> Tree a
+insert v t = t

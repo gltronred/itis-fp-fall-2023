@@ -46,6 +46,12 @@ tests = testGroup "All Tests"
 
 treeTests :: TestTree
 treeTests = testGroup "Tree Tests"
+  [ traversalTests
+  , insertTests
+  ]
+
+traversalTests :: TestTree
+traversalTests = testGroup "traversal"
   [ testCase "empty" $ traversal empty @?= ([] :: [Int])
   , testCase "single elt" $ traversal (Node Nothing 1 Nothing) @?= [1]
   , testCase "three elts" $
@@ -53,3 +59,7 @@ treeTests = testGroup "Tree Tests"
   ]
   where leaf :: a -> Tree a
         leaf a = Node Nothing a Nothing
+
+insertTests :: TestTree
+insertTests = testGroup "insert"
+  []
