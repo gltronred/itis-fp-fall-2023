@@ -1,5 +1,7 @@
 module MyLib where
 
+import Data.Maybe
+
 someFunc :: IO ()
 someFunc = putStrLn "someFunc"
 
@@ -38,7 +40,7 @@ empty = Empty
 
 traversal :: Tree a -> [a]
 traversal Empty = []
-traversal (Node Nothing v Nothing) = [v]
-traversal (Node (Just l) v Nothing) = traversal l ++ [v]
-traversal (Node Nothing v (Just r)) = [v] ++ traversal r
-traversal (Node (Just l) v (Just r)) = traversal l ++ [v] ++ traversal r
+traversal (Node ml v mr)
+  = traversal (fromMaybe Empty ml) ++
+    [v] ++
+    traversal (fromMaybe Empty mr)
