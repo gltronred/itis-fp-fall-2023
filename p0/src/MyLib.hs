@@ -41,6 +41,4 @@ empty = Empty
 traversal :: Tree a -> [a]
 traversal Empty = []
 traversal (Node ml v mr)
-  = traversal (fromMaybe Empty ml) ++
-    [v] ++
-    traversal (fromMaybe Empty mr)
+  = maybe [] traversal ml ++ [v] ++ maybe [] traversal mr
