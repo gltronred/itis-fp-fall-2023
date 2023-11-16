@@ -28,4 +28,4 @@ comp = do
 someFunc :: IO ()
 someFunc = do
   avg <- evalStateT comp (0,0)
-  putStrLn $ "Среднее: " ++ show avg
+  putStrLn $ "Average: " ++ show avg
