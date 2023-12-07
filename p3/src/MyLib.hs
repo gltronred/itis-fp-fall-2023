@@ -18,17 +18,41 @@ Group - группа из N кого-то
 import Control.Concurrent
 import Control.Concurrent.STM
 import Control.Monad
+import qualified Data.Map.Strict as M
+import Data.Map.Strict (Map)
 import System.Random
 
-meetInStudy :: Int -> IO ()
-meetInStudy id = putStr ("Elf " ++ show id ++ " meeting in the study\n")
+type Bank = TVar (Map Int Int)
+
+newBank :: IO Bank
+newBank = newTVarIO M.empty
+
+pay :: Bank -> Int -> STM ()
+pay bank id = modifyTVar' bank $ M.insertWith (\_ old -> old + salary) id salary
+  where salary = 1
+
+printBank :: Bank -> IO ()
+printBank bank = do
+  accs <- atomically $ readTVar bank
+  putStrLn "--- Bank Accounts ---"
+  forM_ (M.toList accs) $ \(k,v) -> do
+    putStrLn $ "Elf " ++ show k ++ ": $" ++ show v
+
+
+meetInStudy :: Bank -> Int -> IO ()
+meetInStudy bank id = do
+  putStrLn $ "Elf " ++ show id ++ " meeting in the study"
+  atomically $ pay bank id
+
 
 deliverToys :: Int -> IO ()
 deliverToys id = putStr ("Reindeer " ++ show id ++ " delivering toys\n")
 
 
-elf1, reindeer1 :: Group -> Int -> IO ()
-elf1      gp id = helper1 gp (meetInStudy id)
+elf1 :: Bank -> Group -> Int -> IO ()
+elf1 bank gp id = helper1 gp (meetInStudy bank id)
+
+reindeer1 :: Group -> Int -> IO ()
 reindeer1 gp id = helper1 gp (deliverToys id)
 
 helper1 :: Group -> IO () -> IO ()
@@ -39,9 +63,9 @@ helper1 group do_task = do
     atomically $ passGate out_gate
 
 
-elf :: Group -> Int -> IO ThreadId
-elf gp id = forkIO (forever (do elf1 gp id
-                                randomDelay))
+elf :: Bank -> Group -> Int -> IO ThreadId
+elf bank gp id = forkIO (forever (do elf1 bank gp id
+                                     randomDelay))
 
 reindeer :: Group -> Int -> IO ThreadId
 reindeer gp id = forkIO (forever (do reindeer1 gp id
@@ -100,8 +124,8 @@ awaitGroup (MkGroup n tv) = do
 
 {------------------------------------------------------------------------------}
 
-santa :: Group -> Group -> IO ()
-santa elf_gp rein_gp = do
+santa :: Bank -> Group -> Group -> IO ()
+santa bank elf_gp rein_gp = do
     putStr "----------\n"
     (task, (in_gate, out_gate)) <- atomically (orElse
                      (chooseGroup rein_gp "deliver toys")
@@ -110,6 +134,7 @@ santa elf_gp rein_gp = do
     operateGate in_gate
               -- Now the helpers do their task
     operateGate out_gate
+    printBank bank
   where
     chooseGroup :: Group -> String -> STM (String, (Gate,Gate))
     chooseGroup gp task = do gates <- awaitGroup gp
@@ -117,10 +142,12 @@ santa elf_gp rein_gp = do
 
 someFunc :: IO ()
 someFunc = do
+    bank <- newBank
+
     elf_group <- newGroup 3
-    sequence_ [ elf elf_group n | n <- [1..10] ]
+    sequence_ [ elf bank elf_group n | n <- [1..10] ]
 
     rein_group <- newGroup 9
     sequence_ [ reindeer rein_group n | n <- [1..9] ]
 
-    forever (santa elf_group rein_group)
+    forever (santa bank elf_group rein_group)

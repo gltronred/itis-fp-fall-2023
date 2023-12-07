@@ -68,6 +68,7 @@ library
 
     -- Other library packages from which modules are imported.
     build-depends:    base ^>=4.16.4.0
+                    , containers >=0.6
                     , random >=1.2
                     , stm >=2.5
 
