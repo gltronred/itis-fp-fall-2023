@@ -10,6 +10,9 @@ module MyLib where
 R&D самостоятельно. Санта даёт приоритет оленям, если его одновременно будят и
 эльфы, и олени.
 
+Group - группа из N кого-то
+(Gate, Gate) - вход и выход в группу
+
 -------------------------------------------------------------------------------}
 
 import Control.Concurrent
@@ -31,9 +34,9 @@ reindeer1 gp id = helper1 gp (deliverToys id)
 helper1 :: Group -> IO () -> IO ()
 helper1 group do_task = do
     (in_gate, out_gate) <- joinGroup group
-    passGate in_gate
+    atomically $ passGate in_gate
     do_task
-    passGate out_gate
+    atomically $ passGate out_gate
 
 
 elf :: Group -> Int -> IO ThreadId
@@ -58,11 +61,11 @@ newGate n = do
     tv <- newTVar 0
     return (MkGate n tv)
 
-passGate :: Gate -> IO ()
+passGate :: Gate -> STM ()
 passGate (MkGate n tv)
-  = atomically (do n_left <- readTVar tv
-                   check (n_left > 0)
-                   writeTVar tv (n_left-1))
+  = (do n_left <- readTVar tv
+        check (n_left > 0)
+        writeTVar tv (n_left-1))
 
 operateGate :: Gate -> IO ()
 operateGate (MkGate n tv) = do
